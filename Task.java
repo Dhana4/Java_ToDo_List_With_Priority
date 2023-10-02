@@ -1,13 +1,17 @@
 package taskPriority;
 
-public class Task {
+import java.io.Serializable;
+
+public class Task implements Serializable{
+	private String taskno;
     private String description;
     private String dueDate;
     private String priority;
     private boolean isCompleted;
 
     // Constructor
-    public Task(String description, String dueDate, String priority) {
+    public Task(String taskno,String description, String dueDate, String priority) {
+    	this.taskno=taskno;
         this.description = description;
         this.dueDate = dueDate;
         this.priority = priority;
@@ -23,9 +27,16 @@ public class Task {
     public void setCompleted(boolean completed) {
         isCompleted = completed;
     }
+    public String getno() {
+        return taskno;
+    }
     
     public String getDescription() {
         return description;
+    }
+    
+    public void setno(String taskno) {
+        this.taskno = taskno;
     }
 
     public void setDescription(String description) {
@@ -50,6 +61,6 @@ public class Task {
 
     @Override
     public String toString() {
-        return "Description: " + description + "\nDue Date: " + dueDate + "\nPriority: " + priority + "\n";
+        return "Task No:" + taskno +"Description: " + description + "\nDue Date: " + dueDate + "\nPriority: " + priority + "\n";
     }
 }
