@@ -1,4 +1,5 @@
 package taskPriority;
+import java.io.*;
 import java.util.*;
 public class TodoListApp {
 	
@@ -15,42 +16,55 @@ public class TodoListApp {
 	  {
 		  sortTasks(tasks);
 	  }
-	  public  static ArrayList<Task> searchTasks(String keyword) {
-	        ArrayList<Task> matchingTasks = new ArrayList<>();
+	  
+	  public static ArrayList<Task> searchTasks(String searchTerm) {
+		    ArrayList<Task> matchingTasks = new ArrayList<>();
 
-	        for (Task task : tasks) {
-	            if (task.getDescription().toLowerCase().contains(keyword.toLowerCase())) {
-	                matchingTasks.add(task);
-	            }
-	        }
+		    for (Task task : tasks) {
+		        String description = task.getDescription();
+		        if (description != null && description.toLowerCase().contains(searchTerm.toLowerCase())) {
+		            matchingTasks.add(task);
+		        }
+		    }
 
-	        return matchingTasks;
-	    }
+		    return matchingTasks;
+		}
 	  
 	  
-	 public static void sortTasks(ArrayList<Task> tasks) {
-        Collections.sort(tasks, new Comparator<Task>() {
-            @Override
-            public int compare(Task task1, Task task2) {
-                // Compare by priority first
-                int priorityComparison = task1.getPriority().compareTo(task2.getPriority());
+	 
+	  public static void sortTasks(ArrayList<Task> tasks) {
+		    Collections.sort(tasks, new Comparator<Task>() {
+		        @Override
+		        public int compare(Task task1, Task task2) {
+		            // Check for null values
+		            if (task1.getPriority() == null && task2.getPriority() == null) {
+		                // Both priorities are null; consider them equal
+		                return 0;
+		            } else if (task1.getPriority() == null) {
+		                // Task1's priority is null; it should come after task2
+		                return 1;
+		            } else if (task2.getPriority() == null) {
+		                // Task2's priority is null; it should come after task1
+		                return -1;
+		            } else {
+		                // Compare by priority first
+		                int priorityComparison = task1.getPriority().compareTo(task2.getPriority());
 
-                // If priorities are the same, compare by due date
-                if (priorityComparison == 0) {
-                    return task1.getDueDate().compareTo(task2.getDueDate());
-                }
+		                // If priorities are the same, compare by due date
+		                if (priorityComparison == 0) {
+		                    return task1.getDueDate().compareTo(task2.getDueDate());
+		                }
 
-                return priorityComparison;
-            }
-        });
-        System.out.println("Tasks sorted by priority and due date.");
+		                return priorityComparison;
+		            }
+		        }
+		    });
     }
 	
 	public static void toggleTaskCompletion(int taskIndex) {
         if (taskIndex >= 0 && taskIndex < tasks.size()) {
             Task task = tasks.get(taskIndex);
             task.setCompleted(!task.isCompleted()); // Toggle completion status
-            System.out.println("Task marked as " + (task.isCompleted() ? "completed" : "incomplete"));
         } else {
             System.out.println("Invalid task index. Please try again.");
         }
@@ -59,11 +73,13 @@ public class TodoListApp {
 	public static void deleteTask(int taskIndex) {
         if (taskIndex >= 0 && taskIndex < tasks.size()) {
             Task removedTask = tasks.remove(taskIndex);
-            System.out.println("Task removed: " + removedTask.getDescription());
+            System.out.println(removedTask.getDescription());
         } else {
             System.out.println("Invalid task index. Please try again.");
         }
     }
+	
+	 
 	
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -83,6 +99,8 @@ public class TodoListApp {
             switch (choice) {
                 case 1:
                     // Add a new task
+                     System.out.print("Enter task No: ");
+                    String taskno = scanner.nextLine();
                     System.out.print("Enter task description: ");
                     String description = scanner.nextLine();
                     System.out.print("Enter due date: ");
@@ -90,7 +108,7 @@ public class TodoListApp {
                     System.out.print("Enter priority: ");
                     String priority = scanner.nextLine();
 
-                    Task newTask = new Task(description, dueDate, priority);
+                    Task newTask = new Task(taskno,description, dueDate, priority);
                     tasks.add(newTask);
                     System.out.println("Task added successfully!");
                     break;
@@ -138,4 +156,40 @@ public class TodoListApp {
             }
         }
     }
+    @SuppressWarnings("unchecked")
+    public static ArrayList<Task> loadTasksFromFile(String filename) {
+        ArrayList<Task> loadedTasks = new ArrayList<>();
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filename))) {
+            loadedTasks = (ArrayList<Task>) ois.readObject();
+        } catch (FileNotFoundException e) {
+            System.out.println("File not found: " + e.getMessage());
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        tasks.clear();
+        for(Task g:loadedTasks)
+        {
+        	tasks.add(g);
+        }
+        return tasks;
+    }
+    
+    public static void saveTasksToFile(String filename) {
+    	ArrayList<Task> bb=new ArrayList<>();
+    	ArrayList<Task> cc=new ArrayList<>();
+    	bb=loadTasksFromFile(filename);
+    	for(Task y:bb)
+    	{
+    		cc.add(y);
+    	}
+    	for(Task z: tasks) {
+    		cc.add(z);
+    	}
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filename))) {
+            oos.writeObject(cc);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
