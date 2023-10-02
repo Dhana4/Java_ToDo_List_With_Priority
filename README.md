@@ -116,7 +116,9 @@ It takes an ArrayList<Task> (in your case, tasks) as an input.
 It opens an ObjectOutputStream to a specified file (e.g., "tasks.ser").
 It writes the tasks ArrayList to the file using serialization.
 Serialization allows you to convert complex objects (in this case, a list of tasks) into a format that can be easily saved to a file and later deserialized to reconstruct the objects.
+
 Real-world application: When a user adds, edits, or removes tasks in your to-do list application, you can call this function to persistently store the updated task list. This ensures that the user's data is preserved even if the application is closed or the computer is restarted.
+
 loadTasksFromFile Function:
 
 Purpose: The loadTasksFromFile function is responsible for loading previously saved tasks from a file. It allows your application to retrieve and display the user's existing to-do list.
@@ -125,5 +127,7 @@ It takes the filename (e.g., "tasks.ser") as an input.
 It opens an ObjectInputStream to read from the specified file.
 It reads the serialized data from the file and deserializes it into an ArrayList<Task>.
 The deserialized list of tasks is returned to the caller, which can then be used to update the application's task list.
+
 Real-world application: When the user launches your to-do list application, you can call this function to retrieve their previously saved tasks. This allows users to continue working with their existing tasks, providing a seamless and persistent experience.
+
 In summary, these functions are essential for implementing data persistence in your to-do list application. They ensure that tasks are saved to a file when the user wants to save their progress and loaded from the file when the user wants to resume their work. This data persistence feature enhances the usability and reliability of your application, making it more practical for users to manage their tasks over time.
