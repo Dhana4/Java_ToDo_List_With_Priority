@@ -1,5 +1,6 @@
 package taskPriority;
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -7,7 +8,14 @@ import java.util.*;
 import javax.swing.JCheckBox;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 public class ToDoListGUI extends JFrame{
+	private static final String TASKS_FILE = "tasks.ser";
 	private static final long serialVersionUID = 1L;
 	private JButton addButton;
     private JButton deleteButton;
@@ -17,6 +25,8 @@ public class ToDoListGUI extends JFrame{
     private JButton searchButton;
     private JTextArea taskTextArea;
     private JButton clearButton;
+    private JButton saveButton;
+    private JButton loadButton;
     
     public ToDoListGUI() {
         setTitle("To-Do List Application");
@@ -79,7 +89,17 @@ public class ToDoListGUI extends JFrame{
         taskTextArea = new JTextArea(30, 50); 
         JScrollPane scrollPane = new JScrollPane(taskTextArea);
         rightPanel.add(scrollPane, BorderLayout.EAST);
-        clearButton = new JButton("Clear");
+        saveButton = new JButton("Save Tasks to file");
+        buttonPanel.add(saveButton);
+        JPanel spacer11 = new JPanel();
+        spacer11.setPreferredSize(new Dimension(0, 25));
+        buttonPanel.add(spacer11);
+        loadButton = new JButton("Load Tasks from file");
+        buttonPanel.add(loadButton);
+        JPanel spacer12 = new JPanel();
+        spacer12.setPreferredSize(new Dimension(0, 25));
+        buttonPanel.add(spacer12);
+        clearButton = new JButton("Clear TextArea");
         buttonPanel.add(clearButton);
         
         add(buttonPanel, BorderLayout.WEST);
@@ -92,12 +112,13 @@ public class ToDoListGUI extends JFrame{
         addButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 // Get task details from the user
+            	String taskno = JOptionPane.showInputDialog("Enter task no:");
                 String taskDescription = JOptionPane.showInputDialog("Enter task description:");
                 String taskDueDate = JOptionPane.showInputDialog("Enter task due date:");
                 String taskPriority = JOptionPane.showInputDialog("Enter task priority (High/Medium/Low):");
 
                 // Create a new Task object with the user-entered details
-                Task newTask = new Task(taskDescription, taskDueDate, taskPriority);
+                Task newTask = new Task(taskno,taskDescription, taskDueDate, taskPriority);
 
                 // Add the new task to your ToDoList instance (assuming you have an instance named 'toDoList')
                 TodoListApp.addTask(newTask);
@@ -165,23 +186,38 @@ public class ToDoListGUI extends JFrame{
         deleteButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
-                    String userInput = JOptionPane.showInputDialog("Enter the index of the task to delete:");
+                    String userInput = JOptionPane.showInputDialog("Enter the TaskNo  to delete:");
                     int selectedIndex = Integer.parseInt(userInput);
-                    
-                    // Check if the index is valid
-                    if (selectedIndex >= 0 && selectedIndex < TodoListApp.getTasks().size()) {
-                        // Call the method to delete the task
-                        TodoListApp.deleteTask(selectedIndex);
-                        // Update the JTextArea to reflect the changes
-                        updateTaskTextArea(TodoListApp.getTasks());
-                    } else {
-                        JOptionPane.showMessageDialog(ToDoListGUI.this, "Invalid index. Please enter a valid index.");
-                    }
+
+                    // Call the method to delete the task by index here
+                    TodoListApp.deleteTask(selectedIndex);
+
+                    // Optionally, update the JTextArea to reflect the changes
+                    ArrayList<Task> updatedTasks = TodoListApp.getTasks();
+                    updateTaskTextArea(updatedTasks);
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(ToDoListGUI.this, "Invalid index. Please enter a valid integer index.");
                 }
             }
         });
+        
+        
+        saveButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                TodoListApp.saveTasksToFile(TASKS_FILE);
+                JOptionPane.showMessageDialog(null, "Tasks saved to file successfully!");
+            }
+        });
+        
+        
+        loadButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                ArrayList<Task> tt = TodoListApp.loadTasksFromFile(TASKS_FILE);
+                updateTaskTextArea(tt);
+                JOptionPane.showMessageDialog(null, "Tasks loaded from file successfully!");
+            }
+        });
+        
         
     }
     
@@ -197,6 +233,7 @@ public class ToDoListGUI extends JFrame{
                 }
             });
             taskTextArea.add(checkBox);
+            taskTextArea.append("Task NO: " + task.getno() + "\n");
             taskTextArea.append("Description: " + task.getDescription() + "\n");
             taskTextArea.append("Due Date: " + task.getDueDate() + "\n");
             taskTextArea.append("Priority: " + task.getPriority() + "\n");
@@ -205,11 +242,31 @@ public class ToDoListGUI extends JFrame{
 
         }
     }
+    
+    public static void saveTasksToFile(ArrayList<Task> tasks, String filename) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filename))) {
+            oos.writeObject(tasks);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    @SuppressWarnings("unchecked")
+	public static ArrayList<Task> loadTasksFromFile(String filename) {
+        ArrayList<Task> tasks = new ArrayList<>();
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filename))) {
+            tasks = (ArrayList<Task>) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return tasks;
+    }
+    
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
+    	SwingUtilities.invokeLater(() -> {
             ToDoListGUI gui = new ToDoListGUI();
             gui.setVisible(true);
         });
         
     }
 }
+
